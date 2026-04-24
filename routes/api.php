@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActualiteController;
 use App\Http\Controllers\Api\AppointmentController;
+use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\InscriptionController;
 use App\Http\Controllers\Api\JobApplicationController;
@@ -33,7 +34,11 @@ prefix('admin')->group(function () {
 
 
 
-Route::post('/contact-messages', [ContactMessageController::class, 'store']);
+
+
+Route::post('/contact-messages', [ContactController::class, 'store']);
+
+Route::post('/contact-messages11', [ContactMessageController::class, 'store']);
 // 🔐 Routes protégées pour l'admin (recommandé)
 Route::
 // middleware('auth:sanctum')->
