@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\InscriptionController;
 use App\Mail\ContactFormMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {

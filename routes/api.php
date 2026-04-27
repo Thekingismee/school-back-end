@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\InscriptionController;
 use App\Http\Controllers\Api\JobApplicationController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -13,6 +14,12 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
 
+
+Route::prefix('v1')->group(function () {
+    // 🔓 Routes publiques (à protéger avec auth:sanctum si nécessaire)
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+});
 
 
 Route::post('/inscriptions', [InscriptionController::class, 'store']);
@@ -38,7 +45,7 @@ prefix('admin')->group(function () {
 
 Route::post('/contact-messages', [ContactController::class, 'store']);
 
-Route::post('/contact-messages11', [ContactMessageController::class, 'store']);
+Route::post('/contact-messages-plus', [ContactMessageController::class, 'store']);
 // 🔐 Routes protégées pour l'admin (recommandé)
 Route::
 // middleware('auth:sanctum')->
@@ -121,6 +128,9 @@ prefix('admin')->group(function () {
     // ➕ Création d'une nouvelle actualité
     Route::post('/actualites', [ActualiteController::class, 'store']);
     
+    // 👁️ Affichage d'une actualité spécifique
+    Route::get('/actualites/{slug}', [ActualiteController::class, 'show']);
+    
     // ✏️ Mise à jour (optionnel - à ajouter si besoin)
     // Route::put('/actualites/{actualite}', [ActualiteController::class, 'update']);
     
@@ -137,5 +147,24 @@ Route::get('/actualites', function(\Illuminate\Http\Request $request) {
     return app(\App\Http\Controllers\ActualiteController::class)
         ->index($request->merge(['statut' => 'publie']));
 });
+
+// 👁️ Affichage détaillé d'une actualité publique
+Route::get('/actualites/{slug}', function($slug) {
+    // Retourner uniquement les actualités publiées
+    $actualite = \App\Models\Actualite::where('slug', $slug)
+        ->where('statut', 'publie')
+        ->first();
+
+    if (!$actualite) {
+        return response()->json([
+            'message' => 'Actualité non trouvée'
+        ], 404);
+    }
+
+    return app(\App\Http\Controllers\ActualiteController::class)->show($slug);
+});
+
+
+
 
 

@@ -97,11 +97,54 @@ class ActualiteController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Display the specified resource.
      * 
-     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $slug
      * @return \Illuminate\Http\JsonResponse
      */
+    public function show($slug)
+    {
+        // 🔍 Recherche par slug ou ID
+        $actualite = Actualite::where('slug', $slug)
+            ->orWhere('id', $slug)
+            ->first();
+
+        if (!$actualite) {
+            return response()->json([
+                'message' => 'Actualité non trouvée'
+            ], 404);
+        }
+
+        // 🎨 Formatage détaillé pour le frontend
+        $responseData = [
+            'id' => $actualite->id,
+            'image' => $actualite->image ? [
+                'path' => $actualite->image,
+                'url' => asset('storage/' . $actualite->image),
+                'thumbnail' => asset('storage/' . $actualite->image),
+            ] : null,
+            'date_publication' => $actualite->date_publication?->format('Y-m-d'),
+            'date_publication_fr' => $actualite->date_publication?->translatedFormat('d F Y'),
+            'categorie' => $actualite->categorie,
+            'titre' => $actualite->titre,
+            'description' => $actualite->description,
+            'slug' => $actualite->slug,
+            'statut' => $actualite->statut,
+            'created_at' => $actualite->created_at?->format('d/m/Y H:i'),
+            'updated_at' => $actualite->updated_at?->format('d/m/Y H:i'),
+            // Helpers
+            'is_publie' => $actualite->statut === 'publie',
+            'is_brouillon' => $actualite->statut === 'brouillon',
+            'has_image' => !empty($actualite->image),
+            // Métadonnées SEO
+            'meta_title' => $actualite->titre,
+            'meta_description' => Str::limit(strip_tags($actualite->description), 160),
+        ];
+
+        return response()->json([
+            'data' => $responseData
+        ]);
+    }
     public function store(Request $request)
     {
         // 🔐 Validation des données
@@ -110,7 +153,7 @@ class ActualiteController extends Controller
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'], // Max 5MB
             
             // 📅 Date de publication
-            'date_publication' => ['required', 'date', 'after_or_equal:today'],
+            'date_publication' => ['required', 'date'],
             
             // 🏷️ Catégorie
             'categorie' => [
@@ -130,12 +173,11 @@ class ActualiteController extends Controller
             'slug' => ['nullable', 'string', 'max:255', 'unique:actualites,slug'],
             
             // 📊 Statut
-            'statut' => ['nullable', 'in:brouillon,publie', 'default:brouillon'],
+            'statut' => ['nullable', 'in:brouillon,publie'],
         ], [
             'image.image' => 'Le fichier doit être une image',
             'image.mimes' => 'Formats acceptés : JPEG, PNG, JPG, WebP',
             'image.max' => 'L\'image ne doit pas dépasser 5 Mo',
-            'date_publication.after_or_equal' => 'La date doit être aujourd\'hui ou dans le futur',
             'categorie.in' => 'Catégorie invalide',
             'titre.min' => 'Le titre doit contenir au moins 5 caractères',
             'description.min' => 'La description doit contenir au moins 20 caractères',
@@ -177,8 +219,6 @@ class ActualiteController extends Controller
             Log::info('Nouvelle actualité créée', [
                 'id' => $actualite->id,
                 'titre' => $actualite->titre,
-                'slug' => $actualite->slug,
-                'statut' => $actualite->statut,
             ]);
 
             // 🎨 Formatage de la réponse
@@ -205,7 +245,6 @@ class ActualiteController extends Controller
         } catch (\Exception $e) {
             Log::error('Erreur création actualité', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
             // 🔙 Rollback de l'image en cas d'erreur
@@ -214,7 +253,7 @@ class ActualiteController extends Controller
             }
 
             return response()->json([
-                'message' => 'Une erreur est survenue lors de la création de l\'actualité'
+                'message' => 'Une erreur est survenue : ' . $e->getMessage()
             ], 500);
         }
     }
