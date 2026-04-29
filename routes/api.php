@@ -9,7 +9,10 @@ use App\Http\Controllers\Api\InscriptionController;
 use App\Http\Controllers\Api\InscriptionMController;
 use App\Http\Controllers\Api\JobApplicationController;
 use App\Http\Controllers\Api\JobApplicationMController;
+use App\Http\Controllers\Api\NewsletterController;
+use App\Http\Controllers\Api\SubscriberController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\UploadController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -172,6 +175,10 @@ Route::get('/actualites/{slug}', function($slug) {
 });
 
 
+Route::post('/subscribers', [SubscriberController::class, 'store']);
 
 
+Route::post('/newsletter/send', [NewsletterController::class, 'send']);
 
+
+Route::post('/upload-image', [UploadController::class, 'upload']);
