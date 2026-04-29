@@ -2,10 +2,13 @@
 
 use App\Http\Controllers\ActualiteController;
 use App\Http\Controllers\Api\AppointmentController;
+use App\Http\Controllers\Api\AppointmentMController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\InscriptionController;
+use App\Http\Controllers\Api\InscriptionMController;
 use App\Http\Controllers\Api\JobApplicationController;
+use App\Http\Controllers\Api\JobApplicationMController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -22,7 +25,8 @@ Route::prefix('v1')->group(function () {
 });
 
 
-Route::post('/inscriptions', [InscriptionController::class, 'store']);
+Route::post('/inscriptions', [InscriptionMController::class, 'store']);
+Route::post('/inscriptions-plus', [InscriptionController::class, 'store']);
 
 Route::
 // middleware('auth:sanctum')->
@@ -68,7 +72,9 @@ prefix('admin')->group(function () {
 
 
 
-Route::post('/appointments', [AppointmentController::class, 'store']);
+Route::post('/appointments', [AppointmentMController::class, 'store']);
+
+Route::post('/appointments-plus', [AppointmentController::class, 'store']);
 Route::post('/appointments/check-availability', [AppointmentController::class, 'checkAvailability']);
 
 Route::
@@ -90,6 +96,7 @@ prefix('admin')->group(function () {
 });
 
 
+Route::post('/job-applications-plus', [JobApplicationMController::class, 'store']);
 Route::post('/job-applications', [JobApplicationController::class, 'store']);
 
 
