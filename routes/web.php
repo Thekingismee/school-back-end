@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return ['Laravel' => app()->version()];
+    return ['GS l\'Atome' => app()->version()];
 });
 
 // Route::post('/inscriptions', [InscriptionController::class, 'store']);
