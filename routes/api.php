@@ -19,7 +19,19 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
-
+// Route::get('/user', function (Request $request) {
+//     return response()->json([
+//         "success" => true,
+        
+//             "id" => 1,
+//             "name" => "AtomBot User",
+//             "email" => "user@groupe-scolaire-latome.ma",
+//             "role" => "parent",
+//             "email_verified_at" => now()->toIso8601String(),
+//             "created_at" => now()->toIso8601String(),
+//             "updated_at" => now()->toIso8601String()
+//     ], 200, [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+// });
 
 Route::prefix('v1')->group(function () {
     // 🔓 Routes publiques (à protéger avec auth:sanctum si nécessaire)
@@ -27,130 +39,74 @@ Route::prefix('v1')->group(function () {
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
 });
 
-
-Route::post('/inscriptions', [InscriptionMController::class, 'store']);
-Route::post('/inscriptions-plus', [InscriptionController::class, 'store']);
-
 Route::
 // middleware('auth:sanctum')->
 prefix('admin')->group(function () {
+
+    // 📋 Liste des actualités avec filtres
+    Route::get('/actualites', [ActualiteController::class, 'index']);
+    Route::post('/actualites', [ActualiteController::class, 'store']);
+    Route::get('/actualites/{slug}', [ActualiteController::class, 'show']);
+    Route::delete('/actualites/{slug}', [ActualiteController::class, 'destroy'])->name('admin.actualites.destroy');
+
     
     // 📋 Liste des inscriptions avec filtres
     Route::get('/inscriptions', [InscriptionController::class, 'index']);
-    
-    // ✏️ Mise à jour du statut
     Route::patch('/inscriptions/{inscription}/status', [InscriptionController::class, 'updateStatus']);
-    
-    // 🗑️ Suppression (soft delete)
     Route::delete('/inscriptions/{inscription}', [InscriptionController::class, 'destroy']);
-    
-});
-
-
-
-
-
-Route::post('/contact-messages', [ContactController::class, 'store']);
-
-Route::post('/contact-messages-plus', [ContactMessageController::class, 'store']);
-// 🔐 Routes protégées pour l'admin (recommandé)
-Route::
-// middleware('auth:sanctum')->
-prefix('admin')->group(function () {
-    
+        
     // 📋 Liste des messages avec filtres
     Route::get('/messages', [ContactMessageController::class, 'index']);
-    
-    // ✏️ Mise à jour (statut, réponse admin, priorité)
     Route::patch('/messages/{contactMessage}', [ContactMessageController::class, 'update']);
-    
-    // 🗑️ Suppression (soft delete)
     Route::delete('/messages/{contactMessage}', [ContactMessageController::class, 'destroy']);
-    
-});
-
-// 🔓 Route publique pour envoyer un message
-
-
-
-
-
-Route::post('/appointments', [AppointmentMController::class, 'store']);
-
-Route::post('/appointments-plus', [AppointmentController::class, 'store']);
-Route::post('/appointments/check-availability', [AppointmentController::class, 'checkAvailability']);
-
-Route::
-// middleware('auth:sanctum')->
-prefix('admin')->group(function () {
-    
+        
     // 📋 Liste des rendez-vous avec filtres
     Route::get('/rendezvous', [AppointmentController::class, 'index']);
-    
-    // ✏️ Mise à jour (statut, priorité, note)
     Route::patch('/rendezvous/{appointment}', [AppointmentController::class, 'update']);
-    
-    // 🗑️ Suppression (soft delete)
     Route::delete('/rendezvous/{appointment}', [AppointmentController::class, 'destroy']);
-    
-    // 🔍 Vérifier disponibilité (optionnel pour admin)
     Route::post('/rendezvous/check-availability', [AppointmentController::class, 'checkAvailability']);
     
-});
-
-
-Route::post('/job-applications-plus', [JobApplicationMController::class, 'store']);
-Route::post('/job-applications', [JobApplicationController::class, 'store']);
-
-
-
-Route::
-// middleware('auth:sanctum')->
-prefix('admin')->group(function () {
     
     // 📋 Liste des candidatures avec filtres
     Route::get('/candidatures', [JobApplicationController::class, 'index']);
-    
-    // ✏️ Mise à jour (statut, priorité, note recruteur)
     Route::patch('/candidatures/{jobApplication}', [JobApplicationController::class, 'update']);
-    
-    // 🗑️ Suppression (soft delete)
     Route::delete('/candidatures/{jobApplication}', [JobApplicationController::class, 'destroy']);
-    
     // 📥 Téléchargement des fichiers (CV, lettre, diplômes)
     Route::get('/candidatures/{jobApplication}/download/{type}/{diplomeIndex?}', 
         [JobApplicationController::class, 'downloadFile'])
         ->where('type', 'cv|lettre|diplome')
         ->where('diplomeIndex', '[0-9]+');
-    
+        
 });
 
 
 
 
-Route::
-// middleware('auth:sanctum')->
-prefix('admin')->group(function () {
-    
-    // 📋 Liste des actualités avec filtres
-    Route::get('/actualites', [ActualiteController::class, 'index']);
-    
-    // ➕ Création d'une nouvelle actualité
-    Route::post('/actualites', [ActualiteController::class, 'store']);
-    
-    // 👁️ Affichage d'une actualité spécifique
-    Route::get('/actualites/{slug}', [ActualiteController::class, 'show']);
-    
-    // ✏️ Mise à jour (optionnel - à ajouter si besoin)
-    // Route::put('/actualites/{actualite}', [ActualiteController::class, 'update']);
-    
-    // 🗑️ Suppression (optionnel - à ajouter si besoin)
-    // Route::delete('/actualites/{actualite}', [ActualiteController::class, 'destroy']);
-    
-});
+
+
+
+Route::post('/inscriptions', [InscriptionMController::class, 'store']);
+Route::post('/inscriptions-plus', [InscriptionController::class, 'store']);
+
+
+
+Route::post('/contact-messages', [ContactController::class, 'store']);
+Route::post('/contact-messages-plus', [ContactMessageController::class, 'store']);
+
+
+
+Route::post('/appointments', [AppointmentMController::class, 'store']);
+Route::post('/appointments-plus', [AppointmentController::class, 'store']);
+Route::post('/appointments/check-availability', [AppointmentController::class, 'checkAvailability']);
+
+
+
+Route::post('/job-applications', [JobApplicationController::class, 'store']);
+Route::post('/job-applications-plus', [JobApplicationMController::class, 'store']);
+
+
 
 Route::get("/actualites/recent",[ActualiteController::class, 'getRecent']);
-
 // 🔓 Routes publiques (pour affichage frontend)
 Route::get('/actualites', function(\Illuminate\Http\Request $request) {
     // Retourner uniquement les actualités publiées pour le public
@@ -176,9 +132,5 @@ Route::get('/actualites/{slug}', function($slug) {
 
 
 Route::post('/subscribers', [SubscriberController::class, 'store']);
-
-
 Route::post('/newsletter/send', [NewsletterController::class, 'send']);
-
-
 Route::post('/upload-image', [UploadController::class, 'upload']);

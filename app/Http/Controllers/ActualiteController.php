@@ -302,4 +302,64 @@ class ActualiteController extends Controller
             'count' => $actualites->count()
         ], 200);
     }
+
+
+
+
+
+
+        /**
+     * Supprime une actualité (par slug ou ID).
+     * 
+     * @param  string  $slug
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy($slug)
+    {
+        try {
+            // 🔍 Recherche par slug ou ID
+            $actualite = Actualite::where('slug', $slug)
+                ->orWhere('id', $slug)
+                ->first();
+
+            if (!$actualite) {
+                return response()->json([
+                    'message' => 'Actualité non trouvée'
+                ], 404);
+            }
+
+            // 🖼️ Suppression de l'image associée si elle existe
+            if ($actualite->image && Storage::exists('public/' . $actualite->image)) {
+                Storage::delete('public/' . $actualite->image);
+                
+                // Optionnel : supprimer aussi la miniature si vous en générez une
+                // $thumbnailPath = str_replace('actualites/', 'actualites/thumbs/', $actualite->image);
+                // if (Storage::exists('public/' . $thumbnailPath)) {
+                //     Storage::delete('public/' . $thumbnailPath);
+                // }
+            }
+
+            // 🗑️ Suppression de l'enregistrement
+            $actualite->delete();
+
+            Log::info('Actualité supprimée', [
+                'id' => $slug,
+                'titre' => $actualite->titre,
+            ]);
+
+            return response()->json([
+                'message' => 'Actualité supprimée avec succès'
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur suppression actualité', [
+                'error' => $e->getMessage(),
+                'slug' => $slug,
+            ]);
+
+            return response()->json([
+                'message' => 'Une erreur est survenue lors de la suppression : ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
